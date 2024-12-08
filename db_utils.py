@@ -2,14 +2,21 @@ import curses
 import mysql.connector
 import random
 import os
+from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 
-def connect_to_db():
-    return mysql.connector.connect(
-        host="localhost",
-        user="your_username",
-        password="your_password",
-        database="typing_speed"
-    )
+def get_db_connection():
+    """Create and return a database connection."""
+    try:
+        connection = mysql.connector.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME
+        )
+        return connection
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None
 
 def save_to_db(name, difficulty, wpm, accuracy, elapsed_time):
     db = connect_to_db()
