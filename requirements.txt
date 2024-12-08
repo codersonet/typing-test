@@ -1,4 +1,4 @@
 mysql-connector
-curses
+windows-curses
 pytest
 python-dotenv
