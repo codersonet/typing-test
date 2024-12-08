@@ -58,11 +58,32 @@ def view_logs(stdscr):
     stdscr.refresh()
     stdscr.getkey()
 
-def get_random_text(difficulty):
+def get_random_text(difficulty, time_limit_minutes):
     base_path = f"text_library/{difficulty}"
     if not os.path.exists(base_path):
         raise FileNotFoundError("Text files for this difficulty do not exist.")
+    
     files = os.listdir(base_path)
     file_path = os.path.join(base_path, random.choice(files))
     with open(file_path, "r") as f:
-        return f.read().strip()
+        full_text = f.read().strip()
+
+    # Define average WPM for each difficulty level
+    avg_wpm = {"easy": 20, "medium": 40, "hard": 60}
+    if difficulty not in avg_wpm:
+        raise ValueError("Invalid difficulty level provided.")
+
+    # Calculate the number of characters needed for the time limit
+    chars_needed = avg_wpm[difficulty] * time_limit_minutes * 5
+
+    # Adjust the text length
+    if len(full_text) > chars_needed:
+        # Truncate if text is longer
+        text = full_text[:chars_needed]
+    else:
+        # Repeat text if shorter
+        repeats = (chars_needed // len(full_text)) + 1
+        text = (full_text * repeats)[:chars_needed]
+
+    return text
+
