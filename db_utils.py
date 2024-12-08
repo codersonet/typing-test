@@ -1,3 +1,4 @@
+import curses
 import mysql.connector
 import random
 import os
