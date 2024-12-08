@@ -3,7 +3,7 @@ import time
 from db_utils import save_to_db, view_scores, view_logs, get_random_text
 from datetime import datetime
 
-def typing_test(stdscr, text):
+def typing_test(stdscr, text, time_limit_minutes):
     stdscr.clear()
     stdscr.addstr("Start typing the following text:\n\n")
     stdscr.addstr(text + "\n", curses.A_BOLD)
@@ -17,6 +17,10 @@ def typing_test(stdscr, text):
 
     while True:
         stdscr.clear()
+        elapsed_time = time.time() - start_time
+        minutes_left = max(0, time_limit_minutes * 60 - elapsed_time)
+        seconds_left = int(minutes_left % 60)
+        stdscr.addstr(f"Time Left: {minutes_left // 60}:{seconds_left:02d} minutes\n", curses.A_BOLD)
         stdscr.addstr(f"Time Elapsed: {elapsed_time:.1f} seconds\n", curses.A_BOLD)
         stdscr.addstr("\nTyping Test:\n\n")
         stdscr.addstr(text + "\n", curses.A_BOLD)
@@ -24,12 +28,9 @@ def typing_test(stdscr, text):
         stdscr.refresh()
 
         char = stdscr.getkey()
-        if char == '\n':
+        if char == '\n' or elapsed_time >= time_limit_minutes * 60:
             break
         typed_text.append(char)
-
-        # Update elapsed time
-        elapsed_time = time.time() - start_time
 
     end_time = time.time()
     total_time_minutes = (end_time - start_time) / 60
@@ -72,9 +73,13 @@ def main(stdscr):
             stdscr.refresh()
             difficulty = stdscr.getstr().decode()
 
+            stdscr.addstr("Enter the time limit in minutes (e.g., 1, 2, 3): ")
+            stdscr.refresh()
+            time_limit_minutes = int(stdscr.getstr().decode())
+
             try:
-                text = get_random_text(difficulty)
-                wpm, accuracy, elapsed_time = typing_test(stdscr, text)
+                text = get_random_text(difficulty, time_limit_minutes)  # Pass time_limit_minutes
+                wpm, accuracy, elapsed_time = typing_test(stdscr, text, time_limit_minutes)
                 save_to_db(name, difficulty, wpm, accuracy, elapsed_time)
 
                 stdscr.addstr("\nTest Complete!\n")
@@ -103,3 +108,4 @@ def main(stdscr):
 
 if __name__ == "__main__":
     curses.wrapper(main)
+
