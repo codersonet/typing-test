@@ -1,4 +1,5 @@
 import curses
+import time
 from db_utils import save_to_db, view_scores, view_logs, get_random_text
 from datetime import datetime
 
@@ -10,11 +11,14 @@ def typing_test(stdscr, text):
     stdscr.refresh()
     stdscr.getkey()
 
-    start_time = datetime.now()
+    start_time = time.time()
     typed_text = []
+    elapsed_time = 0
+
     while True:
         stdscr.clear()
-        stdscr.addstr("Typing Test:\n\n")
+        stdscr.addstr(f"Time Elapsed: {elapsed_time:.1f} seconds\n", curses.A_BOLD)
+        stdscr.addstr("\nTyping Test:\n\n")
         stdscr.addstr(text + "\n", curses.A_BOLD)
         stdscr.addstr("\n" + "".join(typed_text))
         stdscr.refresh()
@@ -24,15 +28,17 @@ def typing_test(stdscr, text):
             break
         typed_text.append(char)
 
-    end_time = datetime.now()
-    typed_text = "".join(typed_text).strip()
-    total_time = (end_time - start_time).total_seconds() / 60
-    wpm = len(typed_text.split()) / total_time
+        # Update elapsed time
+        elapsed_time = time.time() - start_time
+
+    end_time = time.time()
+    total_time_minutes = (end_time - start_time) / 60
+    wpm = len(typed_text) / 5 / total_time_minutes
 
     correct_chars = sum(1 for t, g in zip(typed_text, text) if t == g)
     accuracy = (correct_chars / len(text)) * 100
 
-    return wpm, accuracy
+    return wpm, accuracy, elapsed_time
 
 def main_menu(stdscr):
     curses.start_color()
@@ -68,12 +74,13 @@ def main(stdscr):
 
             try:
                 text = get_random_text(difficulty)
-                wpm, accuracy = typing_test(stdscr, text)
-                save_to_db(name, difficulty, wpm, accuracy)
+                wpm, accuracy, elapsed_time = typing_test(stdscr, text)
+                save_to_db(name, difficulty, wpm, accuracy, elapsed_time)
 
                 stdscr.addstr("\nTest Complete!\n")
                 stdscr.addstr(f"WPM: {wpm:.2f}\n")
                 stdscr.addstr(f"Accuracy: {accuracy:.2f}%\n")
+                stdscr.addstr(f"Total Time: {elapsed_time:.1f} seconds\n")
                 stdscr.addstr("Press any key to return to the menu...")
                 stdscr.refresh()
                 stdscr.getkey()
