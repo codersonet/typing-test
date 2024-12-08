@@ -10,7 +10,7 @@ def connect_to_db():
         database="typing_speed"
     )
 
-def save_to_db(name, difficulty, wpm, accuracy):
+def save_to_db(name, difficulty, wpm, accuracy, elapsed_time):
     db = connect_to_db()
     cursor = db.cursor()
 
@@ -20,10 +20,10 @@ def save_to_db(name, difficulty, wpm, accuracy):
     marks = int(wpm * accuracy / 100)
     query_logs = """
         INSERT INTO user_logs 
-        (user_name, test_date, test_time, difficulty, wpm, accuracy, marks) 
-        VALUES (%s, CURDATE(), CURTIME(), %s, %s, %s, %s)
+        (user_name, test_date, test_time, difficulty, wpm, accuracy, marks, elapsed_time) 
+        VALUES (%s, CURDATE(), CURTIME(), %s, %s, %s, %s, %s)
     """
-    cursor.execute(query_logs, (name, difficulty, wpm, accuracy, marks))
+    cursor.execute(query_logs, (name, difficulty, wpm, accuracy, marks, elapsed_time))
 
     db.commit()
     db.close()
@@ -66,4 +66,3 @@ def get_random_text(difficulty):
     file_path = os.path.join(base_path, random.choice(files))
     with open(file_path, "r") as f:
         return f.read().strip()
-
