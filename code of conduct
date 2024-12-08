@@ -1,0 +1,2 @@
+# run the below command in terminal or mysql client
+mysql -u your_username -p < schema.sql
